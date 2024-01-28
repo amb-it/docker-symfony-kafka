@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+
+  php-fpm:
+    container_name: php_fpm_container
+    build:
+      context: ./php-fpm
+    volumes:
+      - ../src:/var/www
+#      - ./php-fpm/init.sh:/usr/local/bin/init.sh
+#    command: /usr/local/bin/init.sh
+#    command: composer install
+
+
+  nginx:
+    container_name: nginx_container
+    build:
+      context: ./nginx
+    volumes:
+      - ../src:/var/www
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/:/etc/nginx/conf.d
+      - ./nginx/sites-available/:/etc/nginx/sites-available
+    depends_on:
+      - php-fpm
+    ports:
+      - "80:80"
+      - "443:443"
+
+  database:
+    container_name: database_container
+    build:
+      context: ./database
+    env_file:
+      - local.env
+#    uncomment for the case to dump your database after docker-compose is up
+#    volumes:
+#      - ./database/dump.sql:/docker-entrypoint-initdb.d/dump.sql
