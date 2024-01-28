@@ -1,17 +1,41 @@
 framework:
     messenger:
-        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
-        # failure_transport: failed
+        failure_transport: failed
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    use_notify: true
+                    check_delayed_interval: 60000
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
+            kafka:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    metadata.broker.list: '%env(KAFKA_BROKERS)%'
+                    security.protocol: 'plaintext'
+                    allow.auto.create.topics: true
+                    message.send.max.retries: 5
+                    auto.offset.reset: 'earliest'
+                    producer_topic: 'first_topic'
+                    group.id: 'first-consumer-group'
+                    consumer_topics:
+                        - 'first_topic'
 
         routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
+            Symfony\Component\Notifier\Message\ChatMessage: async
+            Symfony\Component\Notifier\Message\SmsMessage: async
+
+            App\Messenger\Message\TryMessage: kafka
+
+        serializer:
+            default_serializer: messenger.transport.symfony_serializer
 
 # when@test:
 #    framework:
