@@ -1,26 +1,28 @@
-# Docker for PHP framework
+# Symfony with Kafka (producer and consumer) in Docker
 
-To start project:
+To launch project:
 ```
 make up
 ```
 
-To install PHP framework with Composer enter php-fpm container:
+after all Docker containers are up install Symfony dependencies with Composer:
+```
+cd ../src && composer install
+```
+
+or if you do not have local Composer, enter to php-fpm container :
 ```
 make enter-php-container
 ```
+and inside it enter: ``` composer install ```
 
-Clear 'src' directory from php-fpm container :
-```
-rm .gitignore
-```
+## Send message
+To send (produce) message to Kafka to topic **first_topic**:
+1) enter PHP container
+2) ```bin/console app:send-message-to-kafka some-text```
 
-and to install preferred framework into 'src' directory from php-fpm container follow installation instructions of chosen framework, f.e.: 
-- Laravel ( [https://laravel.com/docs/master/installation](https://laravel.com/docs/master/installation) )
-  ```
-  composer create-project laravel/laravel .
-  ```
-- Symfony ( [https://symfony.com/doc/current/setup.html](https://symfony.com/doc/current/setup.html) )
-  ```
-  composer create-project symfony/skeleton:"7.0.*" .
-  ```
+## Receive message
+To get (consume) message from Kafka from topic **first_topic**:
+1) enter PHP container
+2) ```bin/console messenger:consume kafka```
+3) check logs (_src/var/log/dev.log_) to see if message was consumed
